@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "ChittyChat/proto";
+
+message Students {
+  repeated string students = 1;
+}
+
+message Empty {}
+
+service ChittyChat {
+  rpc GetStudents (Empty) returns (Students) {};
+}
