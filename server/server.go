@@ -16,10 +16,13 @@ func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.Messa
 	return &proto.Messages{Messages: s.messages}, nil
 }
 
+func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Empty, error) {
+	s.messages = append(s.messages, in.Messages...)
+	return &proto.Empty{}, nil
+}
+
 func main() {
 	server := &Server{messages: []string{}}
-
-	server.messages = append(server.messages, "Hello, World!")
 
 	server.start_server()
 }

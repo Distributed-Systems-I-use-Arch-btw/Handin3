@@ -9,4 +9,5 @@ message Empty {}
 
 service ChittyChat {
   rpc GetMessages (Empty) returns (Messages) {};
+  rpc PostMessage (Messages) returns (Empty) {};
 }

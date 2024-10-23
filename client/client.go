@@ -17,6 +17,11 @@ func main() {
 
 	client := proto.NewChittyChatClient(conn)
 
+	_, err = client.PostMessage(context.Background(), &proto.Messages{Messages: []string{"Hello, World!"}})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	messages, err := client.GetMessages(context.Background(), &proto.Empty{})
 	if err != nil {
 		log.Fatal(err)
