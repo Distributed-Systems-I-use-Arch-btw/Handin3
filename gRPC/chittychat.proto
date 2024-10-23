@@ -1,5 +1,5 @@
 syntax = "proto3";
-option go_package = "ChittyChat/proto";
+option go_package = "ChittyChat/gRPC/proto";
 
 message Messages {
   repeated string messages = 1;
