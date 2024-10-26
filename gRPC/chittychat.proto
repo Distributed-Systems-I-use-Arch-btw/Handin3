@@ -22,6 +22,6 @@ message ClientId {
 
 service ChittyChat {
   rpc GetMessages (Empty) returns (MessagePackage) {};
-  rpc PostMessage (Messages) returns (Empty) {};
+  rpc PostMessage (MessagePackage) returns (Empty) {};
   rpc CreateClientIdentifier (Empty) returns (ClientId) {};
 }

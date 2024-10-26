@@ -11,9 +11,38 @@ import (
 
 type Server struct {
 	proto.UnimplementedChittyChatServer
-	messages []string
-	clock []int32
+	messages  []string
+	clock     []int32
 	nrClients int32
+}
+
+func (s *Server) updateClock(newClock *proto.VectorClock) {
+	var maxClock []int32
+	var minClock []int32
+
+	if len(s.clock) > len(newClock.GetVectorclock()) {
+		maxClock = s.clock
+		minClock = newClock.GetVectorclock()
+	} else {
+		maxClock = newClock.GetVectorclock()
+		minClock = s.clock
+	}
+
+	createdClock := make([]int32, len(maxClock))
+
+	for i := 0; i < len(minClock); i++ {
+		if maxClock[i] > minClock[i] {
+			createdClock[i] = maxClock[i]
+		} else {
+			createdClock[i] = minClock[i]
+		}
+	}
+
+	for i := len(minClock); i < len(maxClock); i++ {
+		createdClock[i] = maxClock[i]
+	}
+
+	s.clock = createdClock
 }
 
 func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.MessagePackage, error) {
@@ -23,15 +52,21 @@ func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.Messa
 	return &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}, nil
 }
 
-func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Empty, error) {
+func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*proto.Empty, error) {
 	s.clock[0] += 1
-	if len(in.Messages[0]) > 128 {
+
+	curMessage := in.Message.Messages
+
+	if len(curMessage[0]) > 128 {
 		return &proto.Empty{}, errors.New("message longer than 128 characters")
-	} else if len(in.Messages[0]) == 0 {
+	} else if len(curMessage[0]) == 0 {
 		return &proto.Empty{}, errors.New("message is empty")
 	}
 
-	s.messages = append(s.messages, in.Messages...)
+	s.messages = append(s.messages, curMessage[0])
+
+	s.updateClock(in.GetVectorclock())
+
 	return &proto.Empty{}, nil
 }
 
@@ -41,7 +76,7 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 }
 
 func main() {
-	server := &Server{messages: []string{}, clock: make([]int32,5), nrClients: 0}
+	server := &Server{messages: []string{}, clock: make([]int32, 5), nrClients: 0}
 
 	server.start_server()
 }

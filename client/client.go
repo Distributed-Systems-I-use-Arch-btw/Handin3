@@ -17,7 +17,7 @@ type clientInfo struct {
 	clock    []int32
 }
 
-func (c *clientInfo) max(newClock *proto.VectorClock) {
+func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
 	var maxClock []int32
 	var minClock []int32
 
@@ -49,9 +49,19 @@ func (c *clientInfo) max(newClock *proto.VectorClock) {
 func (c *clientInfo) GetMessage() (*proto.MessagePackage, error) {
 	messages, err := c.client.GetMessages(context.Background(), &proto.Empty{})
 	c.clock[c.clientId] += 1
-	c.max(messages.Vectorclock)
+	c.updateClock(messages.Vectorclock)
 	fmt.Println(c.clock)
 	return messages, err
+}
+
+func (c *clientInfo) PostMessage(arg string) {
+	c.clock[c.clientId] += 1
+
+	messages := &proto.Messages{Messages: []string{arg}}
+	vectorClock := &proto.VectorClock{Vectorclock: c.clock}
+	postPackage := &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}
+
+	c.client.PostMessage(context.Background(), postPackage)
 }
 
 func main() {
@@ -65,12 +75,7 @@ func main() {
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
 	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: make([]int32, cliId.Clientid+1)}
 
-	arg := os.Args[1]
-
-	_, err = client.PostMessage(context.Background(), &proto.Messages{Messages: []string{arg}})
-	if err != nil {
-		log.Fatal(err)
-	}
+	cliInfo.PostMessage(os.Args[1])
 
 	messages, err := cliInfo.GetMessage()
 	if err != nil {

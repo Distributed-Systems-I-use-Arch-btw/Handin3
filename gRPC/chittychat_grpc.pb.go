@@ -29,7 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChittyChatClient interface {
 	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MessagePackage, error)
-	PostMessage(ctx context.Context, in *Messages, opts ...grpc.CallOption) (*Empty, error)
+	PostMessage(ctx context.Context, in *MessagePackage, opts ...grpc.CallOption) (*Empty, error)
 	CreateClientIdentifier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ClientId, error)
 }
 
@@ -51,7 +51,7 @@ func (c *chittyChatClient) GetMessages(ctx context.Context, in *Empty, opts ...g
 	return out, nil
 }
 
-func (c *chittyChatClient) PostMessage(ctx context.Context, in *Messages, opts ...grpc.CallOption) (*Empty, error) {
+func (c *chittyChatClient) PostMessage(ctx context.Context, in *MessagePackage, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, ChittyChat_PostMessage_FullMethodName, in, out, cOpts...)
@@ -76,7 +76,7 @@ func (c *chittyChatClient) CreateClientIdentifier(ctx context.Context, in *Empty
 // for forward compatibility.
 type ChittyChatServer interface {
 	GetMessages(context.Context, *Empty) (*MessagePackage, error)
-	PostMessage(context.Context, *Messages) (*Empty, error)
+	PostMessage(context.Context, *MessagePackage) (*Empty, error)
 	CreateClientIdentifier(context.Context, *Empty) (*ClientId, error)
 	mustEmbedUnimplementedChittyChatServer()
 }
@@ -91,7 +91,7 @@ type UnimplementedChittyChatServer struct{}
 func (UnimplementedChittyChatServer) GetMessages(context.Context, *Empty) (*MessagePackage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
-func (UnimplementedChittyChatServer) PostMessage(context.Context, *Messages) (*Empty, error) {
+func (UnimplementedChittyChatServer) PostMessage(context.Context, *MessagePackage) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostMessage not implemented")
 }
 func (UnimplementedChittyChatServer) CreateClientIdentifier(context.Context, *Empty) (*ClientId, error) {
@@ -137,7 +137,7 @@ func _ChittyChat_GetMessages_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _ChittyChat_PostMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Messages)
+	in := new(MessagePackage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func _ChittyChat_PostMessage_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: ChittyChat_PostMessage_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChittyChatServer).PostMessage(ctx, req.(*Messages))
+		return srv.(ChittyChatServer).PostMessage(ctx, req.(*MessagePackage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
