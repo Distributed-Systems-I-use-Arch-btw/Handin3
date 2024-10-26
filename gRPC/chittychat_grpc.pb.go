@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChittyChat_GetMessages_FullMethodName = "/ChittyChat/GetMessages"
-	ChittyChat_PostMessage_FullMethodName = "/ChittyChat/PostMessage"
+	ChittyChat_GetMessages_FullMethodName            = "/ChittyChat/GetMessages"
+	ChittyChat_PostMessage_FullMethodName            = "/ChittyChat/PostMessage"
+	ChittyChat_CreateClientIdentifier_FullMethodName = "/ChittyChat/CreateClientIdentifier"
 )
 
 // ChittyChatClient is the client API for ChittyChat service.
@@ -29,6 +30,7 @@ const (
 type ChittyChatClient interface {
 	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MessagePackage, error)
 	PostMessage(ctx context.Context, in *Messages, opts ...grpc.CallOption) (*Empty, error)
+	CreateClientIdentifier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ClientId, error)
 }
 
 type chittyChatClient struct {
@@ -59,12 +61,23 @@ func (c *chittyChatClient) PostMessage(ctx context.Context, in *Messages, opts .
 	return out, nil
 }
 
+func (c *chittyChatClient) CreateClientIdentifier(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ClientId, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClientId)
+	err := c.cc.Invoke(ctx, ChittyChat_CreateClientIdentifier_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChittyChatServer is the server API for ChittyChat service.
 // All implementations must embed UnimplementedChittyChatServer
 // for forward compatibility.
 type ChittyChatServer interface {
 	GetMessages(context.Context, *Empty) (*MessagePackage, error)
 	PostMessage(context.Context, *Messages) (*Empty, error)
+	CreateClientIdentifier(context.Context, *Empty) (*ClientId, error)
 	mustEmbedUnimplementedChittyChatServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedChittyChatServer) GetMessages(context.Context, *Empty) (*Mess
 }
 func (UnimplementedChittyChatServer) PostMessage(context.Context, *Messages) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostMessage not implemented")
+}
+func (UnimplementedChittyChatServer) CreateClientIdentifier(context.Context, *Empty) (*ClientId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateClientIdentifier not implemented")
 }
 func (UnimplementedChittyChatServer) mustEmbedUnimplementedChittyChatServer() {}
 func (UnimplementedChittyChatServer) testEmbeddedByValue()                    {}
@@ -138,6 +154,24 @@ func _ChittyChat_PostMessage_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChittyChat_CreateClientIdentifier_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChittyChatServer).CreateClientIdentifier(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChittyChat_CreateClientIdentifier_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChittyChatServer).CreateClientIdentifier(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChittyChat_ServiceDesc is the grpc.ServiceDesc for ChittyChat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var ChittyChat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PostMessage",
 			Handler:    _ChittyChat_PostMessage_Handler,
+		},
+		{
+			MethodName: "CreateClientIdentifier",
+			Handler:    _ChittyChat_CreateClientIdentifier_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

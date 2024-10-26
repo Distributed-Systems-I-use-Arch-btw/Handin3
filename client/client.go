@@ -11,6 +11,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+type clientInfo struct {
+	clientId int
+}
+
 func main() {
 	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -18,6 +22,11 @@ func main() {
 	}
 
 	client := proto.NewChittyChatClient(conn)
+
+	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
+	fmt.Println(cliId)
+	// cliInfo := &clientInfo{client: cliId}
+	// _ = cliInfo
 
 	arg := os.Args[1]
 

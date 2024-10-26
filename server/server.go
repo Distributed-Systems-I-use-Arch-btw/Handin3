@@ -13,6 +13,7 @@ type Server struct {
 	proto.UnimplementedChittyChatServer
 	messages []string
 	clock []int32
+	nrClients int32
 }
 
 func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.MessagePackage, error) {
@@ -32,8 +33,13 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Em
 	return &proto.Empty{}, nil
 }
 
+func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
+	s.nrClients += 1
+	return &proto.ClientId{Clientid: s.nrClients}, nil
+}
+
 func main() {
-	server := &Server{messages: []string{}}
+	server := &Server{messages: []string{}, nrClients: 0}
 
 	server.start_server()
 }

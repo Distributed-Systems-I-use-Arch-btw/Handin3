@@ -16,7 +16,12 @@ message MessagePackage {
   VectorClock vectorclock = 2;
 }
 
+message ClientId {
+  int32 clientid = 1;
+}
+
 service ChittyChat {
   rpc GetMessages (Empty) returns (MessagePackage) {};
   rpc PostMessage (Messages) returns (Empty) {};
+  rpc CreateClientIdentifier (Empty) returns (ClientId) {};
 }
