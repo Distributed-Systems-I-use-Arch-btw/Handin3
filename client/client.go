@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -51,8 +52,7 @@ func (c *clientInfo) GetMessage() {
 	for {
 		messagePackage, err := stream.Recv()
 		if err != nil {
-            // fmt.Println("The stream has ended")
-            // break
+            time.Sleep(time.Second)
         } else {
 			fmt.Println("Received message: ", messagePackage.Message.Messages)
         	fmt.Println("Vector Clock: ", messagePackage.Vectorclock.Vectorclock)

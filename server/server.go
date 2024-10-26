@@ -46,42 +46,40 @@ func (s *Server) updateClock(newClock *proto.VectorClock) {
 	s.clock = createdClock
 }
 
-func (s *Server) GetNewMessages(oldMessages []string) (NewMessages []string) {
-	if len(oldMessages) < len(s.messages) {
-		return s.messages[len(oldMessages):]
+func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages []string) {
+	if oldMessagesLen < len(s.messages) {
+		return s.messages[oldMessagesLen:]
 	}
 	return []string{}
 }
 
-func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessagesServer) error {
-	s.clock[0] += 1
-	oldMessages := s.messages
-	for _, message := range oldMessages {
+func streamMessages(sendMessages []string, stream proto.ChittyChat_GetMessagesServer, s *Server) {
+	for _, message := range sendMessages {
         messagePackage := &proto.MessagePackage{
             Message:     &proto.Messages{Messages: []string{message}},
             Vectorclock: &proto.VectorClock{Vectorclock: s.clock},
         }
 
         if err := stream.Send(messagePackage); err != nil {
-            return err
+            break
         }
     }
+}
+
+func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessagesServer) error {
+	s.clock[0] += 1
+	currentMessages := s.messages
+	length := len(currentMessages)
+	streamMessages(currentMessages, stream, s)
+
 	for {
 		time.Sleep(time.Second)
 
-		newMessage := s.GetNewMessages(oldMessages)
-		oldMessages = s.messages
+		currentMessages = s.GetNewMessages(length)
+		length = len(s.messages)
 		
-		for _, message := range newMessage {
-			messagePackage := &proto.MessagePackage{
-				Message:     &proto.Messages{Messages: []string{message}},
-				Vectorclock: &proto.VectorClock{Vectorclock: s.clock},
-			}
-	
-			if err := stream.Send(messagePackage); err != nil {
-				return err
-			}
-		}
+		streamMessages(currentMessages, stream, s)
+
 		select {
 			case <-stream.Context().Done():
 				return nil
@@ -89,8 +87,6 @@ func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessage
 				continue
         }
 	}
-	// messages := &proto.Messages{Messages: s.messages}
-	// vectorClock := &proto.VectorClock{Vectorclock: s.clock}
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*proto.Empty, error) {
