@@ -3,8 +3,10 @@ package main
 import (
 	proto "ChittyChat/gRPC"
 	"context"
-	"google.golang.org/grpc"
+	"errors"
 	"net"
+
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -17,6 +19,12 @@ func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.Messa
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Empty, error) {
+	if len(in.Messages[0]) > 128 {
+		return &proto.Empty{}, errors.New("message longer than 128 characters")
+	} else if len(in.Messages[0]) == 0 {
+		return &proto.Empty{}, errors.New("message is empty")
+	}
+
 	s.messages = append(s.messages, in.Messages...)
 	return &proto.Empty{}, nil
 }

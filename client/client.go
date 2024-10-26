@@ -4,9 +4,11 @@ import (
 	proto "ChittyChat/gRPC"
 	"context"
 	"fmt"
+	"log"
+	"os"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 )
 
 func main() {
@@ -17,7 +19,9 @@ func main() {
 
 	client := proto.NewChittyChatClient(conn)
 
-	_, err = client.PostMessage(context.Background(), &proto.Messages{Messages: []string{"Hello, World!"}})
+	arg := os.Args[1]
+
+	_, err = client.PostMessage(context.Background(), &proto.Messages{Messages: []string{arg}})
 	if err != nil {
 		log.Fatal(err)
 	}
