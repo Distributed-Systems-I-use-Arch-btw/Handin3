@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.12.4
-// source: chittychat.proto
+// source: gRPC/chittychat.proto
 
 package proto
 
@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChittyChatClient interface {
-	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Messages, error)
+	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MessagePackage, error)
 	PostMessage(ctx context.Context, in *Messages, opts ...grpc.CallOption) (*Empty, error)
 }
 
@@ -39,9 +39,9 @@ func NewChittyChatClient(cc grpc.ClientConnInterface) ChittyChatClient {
 	return &chittyChatClient{cc}
 }
 
-func (c *chittyChatClient) GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Messages, error) {
+func (c *chittyChatClient) GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*MessagePackage, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Messages)
+	out := new(MessagePackage)
 	err := c.cc.Invoke(ctx, ChittyChat_GetMessages_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (c *chittyChatClient) PostMessage(ctx context.Context, in *Messages, opts .
 // All implementations must embed UnimplementedChittyChatServer
 // for forward compatibility.
 type ChittyChatServer interface {
-	GetMessages(context.Context, *Empty) (*Messages, error)
+	GetMessages(context.Context, *Empty) (*MessagePackage, error)
 	PostMessage(context.Context, *Messages) (*Empty, error)
 	mustEmbedUnimplementedChittyChatServer()
 }
@@ -75,7 +75,7 @@ type ChittyChatServer interface {
 // pointer dereference when methods are called.
 type UnimplementedChittyChatServer struct{}
 
-func (UnimplementedChittyChatServer) GetMessages(context.Context, *Empty) (*Messages, error) {
+func (UnimplementedChittyChatServer) GetMessages(context.Context, *Empty) (*MessagePackage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
 func (UnimplementedChittyChatServer) PostMessage(context.Context, *Messages) (*Empty, error) {
@@ -155,5 +155,5 @@ var ChittyChat_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "chittychat.proto",
+	Metadata: "gRPC/chittychat.proto",
 }

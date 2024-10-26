@@ -12,10 +12,13 @@ import (
 type Server struct {
 	proto.UnimplementedChittyChatServer
 	messages []string
+	clock []int32
 }
 
-func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.Messages, error) {
-	return &proto.Messages{Messages: s.messages}, nil
+func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.MessagePackage, error) {
+	messages := &proto.Messages{Messages: s.messages}
+	vectorClock := &proto.VectorClock{Vectorclock: s.clock}
+	return &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}, nil
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Empty, error) {

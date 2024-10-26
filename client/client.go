@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for _, messages := range messages.Messages {
+	for _, messages := range messages.Message.Messages {
 		fmt.Println(messages)
 	}
 }

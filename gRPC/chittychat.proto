@@ -5,9 +5,18 @@ message Messages {
   repeated string messages = 1;
 }
 
+message VectorClock {
+  repeated int32 vectorclock = 1;
+}
+
 message Empty {}
 
+message MessagePackage {
+  Messages message = 1;
+  VectorClock vectorclock = 2;
+}
+
 service ChittyChat {
-  rpc GetMessages (Empty) returns (Messages) {};
+  rpc GetMessages (Empty) returns (MessagePackage) {};
   rpc PostMessage (Messages) returns (Empty) {};
 }
