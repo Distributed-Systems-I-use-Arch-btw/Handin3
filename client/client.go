@@ -46,12 +46,18 @@ func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
 	c.clock = createdClock
 }
 
-func (c *clientInfo) GetMessage() (*proto.MessagePackage, error) {
-	messages, err := c.client.GetMessages(context.Background(), &proto.Empty{})
-	c.clock[c.clientId] += 1
-	c.updateClock(messages.Vectorclock)
-	fmt.Println(c.clock)
-	return messages, err
+func (c *clientInfo) GetMessage() {
+	stream, _ := c.client.GetMessages(context.Background(), &proto.Empty{})
+	for {
+		messagePackage, err := stream.Recv()
+		if err != nil {
+            // fmt.Println("The stream has ended")
+            // break
+        } else {
+			fmt.Println("Received message: ", messagePackage.Message.Messages)
+        	fmt.Println("Vector Clock: ", messagePackage.Vectorclock.Vectorclock)
+		}
+	}
 }
 
 func (c *clientInfo) PostMessage(arg string) {
@@ -77,21 +83,5 @@ func main() {
 
 	cliInfo.PostMessage(os.Args[1])
 
-	messages, err := cliInfo.GetMessage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, messages := range messages.Message.Messages {
-		fmt.Println(messages)
-	}
-
-	messages2, err := cliInfo.GetMessage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, messages2 := range messages2.Message.Messages {
-		fmt.Println(messages2)
-	}
+	cliInfo.GetMessage()
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -45,11 +46,51 @@ func (s *Server) updateClock(newClock *proto.VectorClock) {
 	s.clock = createdClock
 }
 
-func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.MessagePackage, error) {
+func (s *Server) GetNewMessages(oldMessages []string) (NewMessages []string) {
+	if len(oldMessages) < len(s.messages) {
+		return s.messages[len(oldMessages):]
+	}
+	return []string{}
+}
+
+func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessagesServer) error {
 	s.clock[0] += 1
-	messages := &proto.Messages{Messages: s.messages}
-	vectorClock := &proto.VectorClock{Vectorclock: s.clock}
-	return &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}, nil
+	oldMessages := s.messages
+	for _, message := range oldMessages {
+        messagePackage := &proto.MessagePackage{
+            Message:     &proto.Messages{Messages: []string{message}},
+            Vectorclock: &proto.VectorClock{Vectorclock: s.clock},
+        }
+
+        if err := stream.Send(messagePackage); err != nil {
+            return err
+        }
+    }
+	for {
+		time.Sleep(time.Second)
+
+		newMessage := s.GetNewMessages(oldMessages)
+		oldMessages = s.messages
+		
+		for _, message := range newMessage {
+			messagePackage := &proto.MessagePackage{
+				Message:     &proto.Messages{Messages: []string{message}},
+				Vectorclock: &proto.VectorClock{Vectorclock: s.clock},
+			}
+	
+			if err := stream.Send(messagePackage); err != nil {
+				return err
+			}
+		}
+		select {
+			case <-stream.Context().Done():
+				return nil
+			default:
+				continue
+        }
+	}
+	// messages := &proto.Messages{Messages: s.messages}
+	// vectorClock := &proto.VectorClock{Vectorclock: s.clock}
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*proto.Empty, error) {
