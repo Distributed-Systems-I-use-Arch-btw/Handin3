@@ -12,7 +12,15 @@ import (
 )
 
 type clientInfo struct {
-	clientId int
+	clientId int32
+	clock []int32
+}
+
+func (c *clientInfo) GetMessage (ctx context.Context, client proto.ChittyChatClient) (*proto.MessagePackage, error) {
+	messages, err := client.GetMessages(context.Background(), &proto.Empty{})
+	// max(c.clock, messages.Vectorclock)
+	fmt.Println(messages.Vectorclock)
+	return messages, err
 }
 
 func main() {
@@ -22,11 +30,11 @@ func main() {
 	}
 
 	client := proto.NewChittyChatClient(conn)
+	_ = client
 
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
-	fmt.Println(cliId)
-	// cliInfo := &clientInfo{client: cliId}
-	// _ = cliInfo
+	cliInfo := &clientInfo{clientId: cliId.Clientid}
+	fmt.Println(cliInfo)
 
 	arg := os.Args[1]
 
@@ -35,10 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	messages, err := client.GetMessages(context.Background(), &proto.Empty{})
-	if err != nil {
-		log.Fatal(err)
-	}
+	messages, err := cliInfo.GetMessage(context.Background(), client)
 
 	for _, messages := range messages.Message.Messages {
 		fmt.Println(messages)

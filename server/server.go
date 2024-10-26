@@ -17,12 +17,14 @@ type Server struct {
 }
 
 func (s *Server) GetMessages(ctx context.Context, in *proto.Empty) (*proto.MessagePackage, error) {
+	s.clock[0] += 1
 	messages := &proto.Messages{Messages: s.messages}
 	vectorClock := &proto.VectorClock{Vectorclock: s.clock}
 	return &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}, nil
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.Messages) (*proto.Empty, error) {
+	s.clock[0] += 1
 	if len(in.Messages[0]) > 128 {
 		return &proto.Empty{}, errors.New("message longer than 128 characters")
 	} else if len(in.Messages[0]) == 0 {
@@ -39,7 +41,7 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 }
 
 func main() {
-	server := &Server{messages: []string{}, nrClients: 0}
+	server := &Server{messages: []string{}, clock: make([]int32,5), nrClients: 0}
 
 	server.start_server()
 }
