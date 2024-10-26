@@ -12,9 +12,13 @@ import (
 
 type Server struct {
 	proto.UnimplementedChittyChatServer
-	messages  []string
 	clock     []int32
 	nrClients int32
+	msData	  timedMessages
+}
+type timedMessages struct {
+	messages	[]string
+	timeStamps	[][]int32
 }
 
 func (s *Server) updateClock(newClock *proto.VectorClock) {
@@ -46,18 +50,24 @@ func (s *Server) updateClock(newClock *proto.VectorClock) {
 	s.clock = createdClock
 }
 
-func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages []string) {
-	if oldMessagesLen < len(s.messages) {
-		return s.messages[oldMessagesLen:]
+func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages *timedMessages) {
+	if oldMessagesLen < len(s.msData.messages) {
+		return &timedMessages{
+			messages: s.msData.messages[oldMessagesLen:],
+			timeStamps: s.msData.timeStamps[oldMessagesLen:],
+		}
 	}
-	return []string{}
+	return &timedMessages{
+		messages: []string{},
+		timeStamps: [][]int32{},
+	}
 }
 
-func streamMessages(sendMessages []string, stream proto.ChittyChat_GetMessagesServer, s *Server) {
-	for _, message := range sendMessages {
+func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessagesServer, s *Server) {
+	for i := 0; i < len(sendMessages.messages); i++ {
         messagePackage := &proto.MessagePackage{
-            Message:     &proto.Messages{Messages: []string{message}},
-            Vectorclock: &proto.VectorClock{Vectorclock: s.clock},
+            Message:     &proto.Messages{Messages: []string{sendMessages.messages[i]}},
+            Vectorclock: &proto.VectorClock{Vectorclock: sendMessages.timeStamps[i]},
         }
 
         if err := stream.Send(messagePackage); err != nil {
@@ -68,17 +78,17 @@ func streamMessages(sendMessages []string, stream proto.ChittyChat_GetMessagesSe
 
 func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessagesServer) error {
 	s.clock[0] += 1
-	currentMessages := s.messages
-	length := len(currentMessages)
-	streamMessages(currentMessages, stream, s)
+	currentMessages := &s.msData
+	length := len(currentMessages.messages)
+	streamMessages(*currentMessages, stream, s)
 
 	for {
 		time.Sleep(time.Second)
 
 		currentMessages = s.GetNewMessages(length)
-		length = len(s.messages)
+		length = len(s.msData.messages)
 		
-		streamMessages(currentMessages, stream, s)
+		streamMessages(*currentMessages, stream, s)
 
 		select {
 			case <-stream.Context().Done():
@@ -100,9 +110,10 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 		return &proto.Empty{}, errors.New("message is empty")
 	}
 
-	s.messages = append(s.messages, curMessage[0])
-
 	s.updateClock(in.GetVectorclock())
+
+	s.msData.messages = append(s.msData.messages, curMessage[0])
+	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 
 	return &proto.Empty{}, nil
 }
@@ -113,12 +124,20 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 }
 
 func main() {
-	server := &Server{messages: []string{}, clock: make([]int32, 5), nrClients: 0}
+	server := &Server{
+		clock: make([]int32, 5), 
+		nrClients: 0,
+		msData: timedMessages{
+			messages: make([]string, 0),
+			timeStamps: make([][]int32, 0),
+		}, 
+	}
 
 	server.start_server()
 }
 
 func (s *Server) start_server() {
+
 	gRPCserver := grpc.NewServer()
 
 	netListener, err := net.Listen("tcp", ":5050")
