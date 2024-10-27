@@ -4,7 +4,6 @@ import (
 	proto "ChittyChat/gRPC"
 	"bufio"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -41,8 +40,8 @@ func (c *clientInfo) GetMessage() {
 		if err != nil {
 			time.Sleep(time.Millisecond)
 		} else {
-			fmt.Println(colors["blue"], messagePackage.Lamporttimestamp.Lamporttimestamp, colors["reset"])
-			fmt.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
+			log.Println(colors["blue"], messagePackage.Lamporttimestamp.Lamporttimestamp, colors["reset"])
+			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
 		}
 	}
 }

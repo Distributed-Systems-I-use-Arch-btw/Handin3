@@ -4,8 +4,9 @@ import (
 	proto "ChittyChat/gRPC"
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"net"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc"
@@ -71,7 +72,8 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 		select {
 		case <-stream.Context().Done():
 			s.clock += 1
-			hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at at Lamport time %d", s.nrClients, s.clock)
+			hasLeft := "Participant " + strconv.Itoa(int(s.nrClients)) + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(s.clock))
+			log.Println(hasLeft)
 			s.msData.messages = append(s.msData.messages, hasLeft)
 			s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 			return nil
@@ -102,8 +104,10 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientPackage, error) {
 	s.nrClients += 1
-	//Might need to update vector clock?
-	hasJoined := fmt.Sprintf("Participant %d joined Chitty-Chat at at Lamport time %d", s.nrClients, s.clock)
+	s.clock += 1
+
+	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + strconv.Itoa(int(s.clock))
+	log.Println(hasJoined)
 
 	s.msData.messages = append(s.msData.messages, hasJoined)
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
