@@ -14,7 +14,6 @@ import (
 
 type Server struct {
 	proto.UnimplementedChittyChatServer
-	clock     int32
 	nrClients int32
 	msData    timedMessages
 }
@@ -24,8 +23,8 @@ type timedMessages struct {
 }
 
 func (s *Server) updateClock(newClock *proto.LamportTimestamp) {
-	if s.clock < newClock.Lamporttimestamp {
-		s.clock = newClock.Lamporttimestamp
+	if 0 < newClock.Lamporttimestamp {
+		_ = newClock.Lamporttimestamp
 	}
 }
 
@@ -56,12 +55,11 @@ func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessa
 }
 
 func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMessagesServer) error {
-	s.clock += 1
 	currentMessages := &s.msData
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
 
-	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(s.nrClients)) + " at Lamport time " + strconv.Itoa(int(s.clock)))
+	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(s.nrClients)) + " at Lamport time " +  "TBA")
 
 	for {
 		time.Sleep(time.Millisecond)
@@ -73,11 +71,10 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 
 		select {
 		case <-stream.Context().Done():
-			s.clock += 1
-			hasLeft := "Participant " + strconv.Itoa(int(s.nrClients)) + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(s.clock))
+			hasLeft := "Participant " + strconv.Itoa(int(s.nrClients)) + " left Chitty-Chat at Lamport time " + "TBA"
 			log.Println(hasLeft)
 			s.msData.messages = append(s.msData.messages, hasLeft)
-			s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
+			s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
 			return nil
 		default:
 			continue
@@ -86,8 +83,6 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*proto.Empty, error) {
-	s.clock += 1
-
 	curMessage := in.Message.Messages
 
 	if len(curMessage[0]) > 128 {
@@ -99,28 +94,26 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 	s.updateClock(in.GetLamporttimestamp())
 
 	s.msData.messages = append(s.msData.messages, curMessage[0])
-	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
+	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
 
-	log.Println("Received PostMessage call at Lamport time " + strconv.Itoa(int(s.clock)))
+	log.Println("Received PostMessage call at Lamport time " + "TBA")
 
 	return &proto.Empty{}, nil
 }
 
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
 	s.nrClients += 1
-	s.clock += 1
 
-	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + strconv.Itoa(int(s.clock))
+	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + "TBA"
 	log.Println(hasJoined)
 
 	s.msData.messages = append(s.msData.messages, hasJoined)
-	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
+	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
 	return &proto.ClientId{Clientid: s.nrClients}, nil
 }
 
 func Run() {
 	server := &Server{
-		clock:     int32(0),
 		nrClients: 0,
 		msData: timedMessages{
 			messages:   make([]string, 0),
