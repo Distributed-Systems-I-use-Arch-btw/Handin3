@@ -53,7 +53,7 @@ func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.Chitt
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
 
-	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(s.nrClients)) + " at Lamport time " +  "TBA")
+	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(clientInfo.LamportTimestamp.Lamporttimestamp)) + " at Lamport time " +  "TBA")
 
 	for {
 		time.Sleep(time.Millisecond)
@@ -65,7 +65,7 @@ func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.Chitt
 
 		select {
 		case <-stream.Context().Done():
-			hasLeft := "Participant " + strconv.Itoa(int(s.nrClients)) + " left Chitty-Chat at Lamport time " + "TBA"
+			hasLeft := "Participant " + strconv.Itoa(int(clientInfo.ClientId.Clientid)) + " left Chitty-Chat at Lamport time " + "TBA"
 			log.Println(hasLeft)
 			s.msData.messages = append(s.msData.messages, hasLeft)
 			s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
