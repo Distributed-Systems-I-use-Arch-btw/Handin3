@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"fmt"
 	"time"
 
 	"google.golang.org/grpc"
@@ -92,6 +93,10 @@ func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessage
 
 		select {
 			case <-stream.Context().Done():
+				hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at Vector time z", s.nrClients) 
+				//Might need to update vector clock?
+				s.msData.messages = append(s.msData.messages, hasLeft)
+				s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 				return nil
 			default:
 				continue
@@ -120,6 +125,11 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
 	s.nrClients += 1
+	//Might need to update vector clock?
+	hasJoined := fmt.Sprintf("Participant %d joined Chitty-Chat at Vector time z", s.nrClients) 
+	
+	s.msData.messages = append(s.msData.messages, hasJoined)
+	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 	return &proto.ClientId{Clientid: s.nrClients}, nil
 }
 
