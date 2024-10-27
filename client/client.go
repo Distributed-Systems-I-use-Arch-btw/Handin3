@@ -47,7 +47,7 @@ func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
 }
 
 func (c *clientInfo) GetMessage() {
-	stream, _ := c.client.GetMessages(context.Background(), &proto.Empty{})
+	stream, _ := c.client.GetMessages(context.Background(), &proto.ClientId{Clientid: c.clientId})
 	for {
 		messagePackage, err := stream.Recv()
 		if err != nil {

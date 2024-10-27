@@ -77,7 +77,7 @@ func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessa
     }
 }
 
-func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessagesServer) error {
+func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMessagesServer) error {
 	s.clock[0] += 1
 	currentMessages := &s.msData
 	length := len(currentMessages.messages)
@@ -93,7 +93,7 @@ func (s *Server) GetMessages(in *proto.Empty, stream proto.ChittyChat_GetMessage
 
 		select {
 			case <-stream.Context().Done():
-				hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at Vector time z", s.nrClients) 
+				hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at Vector time z", id.Clientid) 
 				//Might need to update vector clock?
 				s.msData.messages = append(s.msData.messages, hasLeft)
 				s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
