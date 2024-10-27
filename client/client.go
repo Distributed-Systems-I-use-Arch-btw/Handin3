@@ -27,19 +27,27 @@ var colors = map[string]string{
 	"reset":  "\033[0m",
 }
 
-func (c *clientInfo) updateClock(newClock *proto.LamportTimestamp) {
-	if c.clock < newClock.Lamporttimestamp {
-		c.clock = newClock.Lamporttimestamp
+func (c *clientInfo) updateClock(newTimeStamp int32) {
+	if newTimeStamp > c.clock {
+		c.clock = newTimeStamp
 	}
+	c.clock = c.clock + 1
 }
 
 func (c *clientInfo) GetMessage() {
-	stream, _ := c.client.GetMessages(context.Background(), &proto.ClientId{Clientid: c.clientId})
+	c.clock += 1
+
+	stream, _ := c.client.GetMessages(context.Background(), 
+		&proto.ClientPackage{
+			ClientId: &proto.ClientId{Clientid: c.clientId},
+			LamportTimestamp: &proto.LamportTimestamp{Lamporttimestamp: c.clock},
+		})
 	for {
 		messagePackage, err := stream.Recv()
 		if err != nil {
 			time.Sleep(time.Millisecond)
 		} else {
+			c.updateClock(messagePackage.Lamporttimestamp.Lamporttimestamp)
 			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0])
 		}
 	}
@@ -82,7 +90,7 @@ func Run() {
 	client := proto.NewChittyChatClient(conn)
 
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
-	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid.Clientid, clock: cliId.Lamporttimestamp.Lamporttimestamp}
+	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(1)}
 
 	go cliInfo.Scanner()
 
