@@ -17,7 +17,7 @@ import (
 type clientInfo struct {
 	client   proto.ChittyChatClient
 	clientId int32
-	clock    []int32
+	clock    int32
 }
 
 var colors = map[string]string{
@@ -29,32 +29,9 @@ var colors = map[string]string{
 } 
 
 func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
-	var maxClock []int32
-	var minClock []int32
-
-	if len(c.clock) > len(newClock.GetVectorclock()) {
-		maxClock = c.clock
-		minClock = newClock.GetVectorclock()
-	} else {
-		maxClock = newClock.GetVectorclock()
-		minClock = c.clock
+	if c.clock < newClock.Vectorclock {
+		c.clock = newClock.Vectorclock
 	}
-
-	createdClock := make([]int32, len(maxClock))
-
-	for i := 0; i < len(minClock); i++ {
-		if maxClock[i] > minClock[i] {
-			createdClock[i] = maxClock[i]
-		} else {
-			createdClock[i] = minClock[i]
-		}
-	}
-
-	for i := len(minClock); i < len(maxClock); i++ {
-		createdClock[i] = maxClock[i]
-	}
-
-	c.clock = createdClock
 }
 
 func (c *clientInfo) GetMessage() {
@@ -71,7 +48,7 @@ func (c *clientInfo) GetMessage() {
 }
 
 func (c *clientInfo) PostMessage(msg string) {
-	c.clock[c.clientId] += 1
+	c.clock += 1
 
 	messages := &proto.Messages{Messages: []string{msg}}
 	vectorClock := &proto.VectorClock{Vectorclock: c.clock}
@@ -107,7 +84,7 @@ func main() {
 	client := proto.NewChittyChatClient(conn)
 
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
-	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: make([]int32, cliId.Clientid+1)}
+	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(0)}
 
 	go cliInfo.Scanner()
 	

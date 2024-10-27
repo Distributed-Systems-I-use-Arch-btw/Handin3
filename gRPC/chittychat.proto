@@ -6,7 +6,7 @@ message Messages {
 }
 
 message VectorClock {
-  repeated int32 vectorclock = 1;
+  int32 vectorclock = 1;
 }
 
 message Empty {}

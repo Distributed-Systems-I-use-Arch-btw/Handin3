@@ -13,42 +13,19 @@ import (
 
 type Server struct {
 	proto.UnimplementedChittyChatServer
-	clock     []int32
+	clock     int32
 	nrClients int32
 	msData	  timedMessages
 }
 type timedMessages struct {
 	messages	[]string
-	timeStamps	[][]int32
+	timeStamps	[]int32
 }
 
 func (s *Server) updateClock(newClock *proto.VectorClock) {
-	var maxClock []int32
-	var minClock []int32
-
-	if len(s.clock) > len(newClock.GetVectorclock()) {
-		maxClock = s.clock
-		minClock = newClock.GetVectorclock()
-	} else {
-		maxClock = newClock.GetVectorclock()
-		minClock = s.clock
+	if s.clock < newClock.Vectorclock {
+		s.clock = newClock.Vectorclock
 	}
-
-	createdClock := make([]int32, len(maxClock))
-
-	for i := 0; i < len(minClock); i++ {
-		if maxClock[i] > minClock[i] {
-			createdClock[i] = maxClock[i]
-		} else {
-			createdClock[i] = minClock[i]
-		}
-	}
-
-	for i := len(minClock); i < len(maxClock); i++ {
-		createdClock[i] = maxClock[i]
-	}
-
-	s.clock = createdClock
 }
 
 func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages *timedMessages) {
@@ -60,7 +37,7 @@ func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages *timedMessages)
 	}
 	return &timedMessages{
 		messages: []string{},
-		timeStamps: [][]int32{},
+		timeStamps: []int32{},
 	}
 }
 
@@ -78,7 +55,7 @@ func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessa
 }
 
 func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMessagesServer) error {
-	s.clock[0] += 1
+	s.clock += 1
 	currentMessages := &s.msData
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
@@ -105,7 +82,7 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 }
 
 func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*proto.Empty, error) {
-	s.clock[0] += 1
+	s.clock += 1
 
 	curMessage := in.Message.Messages
 
@@ -135,11 +112,11 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 
 func main() {
 	server := &Server{
-		clock: make([]int32, 5), 
+		clock: int32(0), 
 		nrClients: 0,
 		msData: timedMessages{
 			messages: make([]string, 0),
-			timeStamps: make([][]int32, 0),
+			timeStamps: make([]int32, 0),
 		}, 
 	}
 
