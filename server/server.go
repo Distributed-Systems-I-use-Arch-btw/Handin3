@@ -53,7 +53,7 @@ func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.Chitt
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
 
-	log.Println("Received GetMessages call from Participant " + strconv.Itoa(int(clientInfo.ClientId.Clientid)) + " at Lamport time " +  strconv.Itoa(int(clientInfo.LamportTimestamp.Lamporttimestamp)))
+	log.Println("Received GetMessages call from Participant " + strconv.Itoa(int(clientInfo.ClientId.Clientid)) + " at Lamport time " + strconv.Itoa(int(clientInfo.LamportTimestamp.Lamporttimestamp)))
 
 	for {
 		time.Sleep(time.Millisecond)
@@ -104,9 +104,10 @@ func (s *Server) Disconnect(ctx context.Context, in *proto.ClientPackage) (*prot
 	hasLeft := "Participant " + strconv.Itoa(int(in.ClientId.Clientid)) + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(in.LamportTimestamp.Lamporttimestamp))
 	log.Println(hasLeft)
 	s.msData.messages = append(s.msData.messages, hasLeft)
-	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
+	s.msData.timeStamps = append(s.msData.timeStamps, in.LamportTimestamp.Lamporttimestamp)
 	return &proto.Empty{}, nil
 }
+
 func Run() {
 	server := &Server{
 		nrClients: 0,
