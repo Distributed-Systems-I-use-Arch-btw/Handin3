@@ -61,6 +61,8 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
 
+	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(s.nrClients)) + " at Lamport time " + strconv.Itoa(int(s.clock)))
+
 	for {
 		time.Sleep(time.Millisecond)
 
@@ -99,6 +101,8 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 	s.msData.messages = append(s.msData.messages, curMessage[0])
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 
+	log.Println("Received PostMessage call at Lamport time " + strconv.Itoa(int(s.clock)))
+
 	return &proto.Empty{}, nil
 }
 
@@ -133,6 +137,8 @@ func Run() {
 func (s *Server) start_server() {
 
 	gRPCserver := grpc.NewServer()
+
+	log.Println("Server started at Lamport time " + strconv.Itoa(int(s.clock)))
 
 	netListener, err := net.Listen("tcp", ":5050")
 	if err != nil {
