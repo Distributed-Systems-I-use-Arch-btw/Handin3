@@ -48,7 +48,7 @@ func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessa
 	}
 }
 
-func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMessagesServer) error {
+func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.ChittyChat_GetMessagesServer) error {
 	currentMessages := &s.msData
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)

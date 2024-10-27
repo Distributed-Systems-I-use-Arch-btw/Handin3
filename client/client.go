@@ -35,7 +35,13 @@ func (c *clientInfo) updateClock(newTimeStamp int32) {
 }
 
 func (c *clientInfo) GetMessage() {
-	stream, _ := c.client.GetMessages(context.Background(), &proto.ClientId{Clientid: c.clientId})
+	c.clock += 1
+
+	stream, _ := c.client.GetMessages(context.Background(), 
+		&proto.ClientPackage{
+			ClientId: &proto.ClientId{Clientid: c.clientId},
+			LamportTimestamp: &proto.LamportTimestamp{Lamporttimestamp: c.clock},
+		})
 	for {
 		messagePackage, err := stream.Recv()
 		if err != nil {
