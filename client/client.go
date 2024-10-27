@@ -2,13 +2,13 @@ package main
 
 import (
 	proto "ChittyChat/gRPC"
+	"bufio"
 	"context"
 	"fmt"
 	"log"
-	"time"
-	"bufio"
 	"os"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -21,12 +21,12 @@ type clientInfo struct {
 }
 
 var colors = map[string]string{
-    "red":    "\033[31m",
-    "green":  "\033[32m",
-    "yellow": "\033[33m",
-    "blue":   "\033[34m",
-    "reset":  "\033[0m",
-} 
+	"red":    "\033[31m",
+	"green":  "\033[32m",
+	"yellow": "\033[33m",
+	"blue":   "\033[34m",
+	"reset":  "\033[0m",
+}
 
 func (c *clientInfo) updateClock(newClock *proto.LamportTimestamp) {
 	if c.clock < newClock.Lamporttimestamp {
@@ -39,9 +39,9 @@ func (c *clientInfo) GetMessage() {
 	for {
 		messagePackage, err := stream.Recv()
 		if err != nil {
-            time.Sleep(time.Second)
-        } else {
-			fmt.Println(colors["blue"],messagePackage.Lamporttimestamp.Lamporttimestamp, colors["reset"])
+			time.Sleep(time.Millisecond)
+		} else {
+			fmt.Println(colors["blue"], messagePackage.Lamporttimestamp.Lamporttimestamp, colors["reset"])
 			fmt.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
 		}
 	}
@@ -62,15 +62,15 @@ func (c *clientInfo) Scanner() {
 	running := true
 
 	for running {
-		
+
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
 
 		switch text {
-			case "exit":
-				running = false
-			default:
-				c.PostMessage(text)
+		case "exit":
+			running = false
+		default:
+			c.PostMessage(text)
 		}
 	}
 }
@@ -87,9 +87,7 @@ func main() {
 	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid.Clientid, clock: cliId.Lamporttimestamp.Lamporttimestamp}
 
 	go cliInfo.Scanner()
-	
+
 	cliInfo.GetMessage()
 
 }
-
-

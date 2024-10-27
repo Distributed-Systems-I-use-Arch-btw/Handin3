@@ -4,8 +4,8 @@ import (
 	proto "ChittyChat/gRPC"
 	"context"
 	"errors"
-	"net"
 	"fmt"
+	"net"
 	"time"
 
 	"google.golang.org/grpc"
@@ -15,11 +15,11 @@ type Server struct {
 	proto.UnimplementedChittyChatServer
 	clock     int32
 	nrClients int32
-	msData	  timedMessages
+	msData    timedMessages
 }
 type timedMessages struct {
-	messages	[]string
-	timeStamps	[]int32
+	messages   []string
+	timeStamps []int32
 }
 
 func (s *Server) updateClock(newClock *proto.LamportTimestamp) {
@@ -31,27 +31,27 @@ func (s *Server) updateClock(newClock *proto.LamportTimestamp) {
 func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages *timedMessages) {
 	if oldMessagesLen < len(s.msData.messages) {
 		return &timedMessages{
-			messages: s.msData.messages[oldMessagesLen:],
+			messages:   s.msData.messages[oldMessagesLen:],
 			timeStamps: s.msData.timeStamps[oldMessagesLen:],
 		}
 	}
 	return &timedMessages{
-		messages: []string{},
+		messages:   []string{},
 		timeStamps: []int32{},
 	}
 }
 
 func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessagesServer, s *Server) {
 	for i := 0; i < len(sendMessages.messages); i++ {
-        messagePackage := &proto.MessagePackage{
-            Message:     &proto.Messages{Messages: []string{sendMessages.messages[i]}},
-            Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: sendMessages.timeStamps[i]},
-        }
+		messagePackage := &proto.MessagePackage{
+			Message:          &proto.Messages{Messages: []string{sendMessages.messages[i]}},
+			Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: sendMessages.timeStamps[i]},
+		}
 
-        if err := stream.Send(messagePackage); err != nil {
-            break
-        }
-    }
+		if err := stream.Send(messagePackage); err != nil {
+			break
+		}
+	}
 }
 
 func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMessagesServer) error {
@@ -61,23 +61,23 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 	streamMessages(*currentMessages, stream, s)
 
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond)
 
 		currentMessages = s.GetNewMessages(length)
 		length = len(s.msData.messages)
-		
+
 		streamMessages(*currentMessages, stream, s)
 
 		select {
-			case <-stream.Context().Done():
-				c.clock += 1
-				hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at at Lamport time %d", s.nrClients, s.clock) 
-				s.msData.messages = append(s.msData.messages, hasLeft)
-				s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
-				return nil
-			default:
-				continue
-        }
+		case <-stream.Context().Done():
+			s.clock += 1
+			hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at at Lamport time %d", s.nrClients, s.clock)
+			s.msData.messages = append(s.msData.messages, hasLeft)
+			s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
+			return nil
+		default:
+			continue
+		}
 	}
 }
 
@@ -103,24 +103,24 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientPackage, error) {
 	s.nrClients += 1
 	//Might need to update vector clock?
-	hasJoined := fmt.Sprintf("Participant %d joined Chitty-Chat at at Lamport time %d", s.nrClients, s.clock) 
-	
+	hasJoined := fmt.Sprintf("Participant %d joined Chitty-Chat at at Lamport time %d", s.nrClients, s.clock)
+
 	s.msData.messages = append(s.msData.messages, hasJoined)
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
-	return &proto.ClientPackage {
-		Clientid: &proto.ClientId{Clientid: s.nrClients},
+	return &proto.ClientPackage{
+		Clientid:         &proto.ClientId{Clientid: s.nrClients},
 		Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: s.clock},
 	}, nil
 }
 
 func main() {
 	server := &Server{
-		clock: int32(0), 
+		clock:     int32(0),
 		nrClients: 0,
 		msData: timedMessages{
-			messages: make([]string, 0),
+			messages:   make([]string, 0),
 			timeStamps: make([]int32, 0),
-		}, 
+		},
 	}
 
 	server.start_server()
