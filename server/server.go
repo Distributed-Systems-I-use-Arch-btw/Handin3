@@ -22,12 +22,6 @@ type timedMessages struct {
 	timeStamps []int32
 }
 
-func (s *Server) updateClock(newClock *proto.LamportTimestamp) {
-	if 0 < newClock.Lamporttimestamp {
-		_ = newClock.Lamporttimestamp
-	}
-}
-
 func (s *Server) GetNewMessages(oldMessagesLen int) (NewMessages *timedMessages) {
 	if oldMessagesLen < len(s.msData.messages) {
 		return &timedMessages{
@@ -91,12 +85,10 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 		return &proto.Empty{}, errors.New("message is empty")
 	}
 
-	s.updateClock(in.GetLamporttimestamp())
-
 	s.msData.messages = append(s.msData.messages, curMessage[0])
 	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
 
-	log.Println("Received PostMessage call at Lamport time " + "TBA")
+	log.Println("Received PostMessage call at Lamport time " + strconv.Itoa(int(in.Lamporttimestamp.Lamporttimestamp)))
 
 	return &proto.Empty{}, nil
 }

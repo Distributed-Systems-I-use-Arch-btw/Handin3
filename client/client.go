@@ -27,10 +27,11 @@ var colors = map[string]string{
 	"reset":  "\033[0m",
 }
 
-func (c *clientInfo) updateClock(newClock *proto.LamportTimestamp) {
-	if c.clock < newClock.Lamporttimestamp {
-		c.clock = newClock.Lamporttimestamp
+func (c *clientInfo) updateClock(newTimeStamp int32) {
+	if newTimeStamp > c.clock {
+		c.clock = newTimeStamp
 	}
+	c.clock = c.clock + 1
 }
 
 func (c *clientInfo) GetMessage() {
@@ -40,6 +41,7 @@ func (c *clientInfo) GetMessage() {
 		if err != nil {
 			time.Sleep(time.Millisecond)
 		} else {
+			c.updateClock(messagePackage.Lamporttimestamp.Lamporttimestamp)
 			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0])
 		}
 	}
