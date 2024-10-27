@@ -53,7 +53,7 @@ func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.Chitt
 	length := len(currentMessages.messages)
 	streamMessages(*currentMessages, stream, s)
 
-	log.Println("Received GetMessages call from Client Id " + strconv.Itoa(int(clientInfo.LamportTimestamp.Lamporttimestamp)) + " at Lamport time " +  "TBA")
+	log.Println("Received GetMessages call from Participant " + strconv.Itoa(int(clientInfo.ClientId.Clientid)) + " at Lamport time " +  strconv.Itoa(int(clientInfo.LamportTimestamp.Lamporttimestamp)))
 
 	for {
 		time.Sleep(time.Millisecond)
@@ -96,7 +96,7 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
 	s.nrClients += 1
 
-	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + "TBA"
+	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + "1"
 	log.Println(hasJoined)
 
 	s.msData.messages = append(s.msData.messages, hasJoined)
