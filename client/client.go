@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"bufio"
+	"os"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,6 +19,14 @@ type clientInfo struct {
 	clientId int32
 	clock    []int32
 }
+
+var colors = map[string]string{
+    "red":    "\033[31m",
+    "green":  "\033[32m",
+    "yellow": "\033[33m",
+    "blue":   "\033[34m",
+    "reset":  "\033[0m",
+} 
 
 func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
 	var maxClock []int32
@@ -54,7 +65,7 @@ func (c *clientInfo) GetMessage() {
             time.Sleep(time.Second)
         } else {
 			fmt.Println(messagePackage.Vectorclock.Vectorclock)
-			fmt.Println("Received message: ", messagePackage.Message.Messages)
+			fmt.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
 		}
 	}
 }
@@ -70,13 +81,17 @@ func (c *clientInfo) PostMessage(msg string) {
 }
 
 func (c *clientInfo) Scanner() {
+	reader := bufio.NewReader(os.Stdin)
 	running := true
-	var text string
+
 	for running {
-		fmt.Scan(&text)
+		
+		text, _ := reader.ReadString('\n')
+		text = strings.TrimSpace(text)
+
 		switch text {
 			case "exit":
-				break
+				running = false
 			default:
 				c.PostMessage(text)
 		}
