@@ -106,7 +106,7 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 	return &proto.Empty{}, nil
 }
 
-func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientPackage, error) {
+func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
 	s.nrClients += 1
 	s.clock += 1
 
@@ -115,10 +115,7 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 
 	s.msData.messages = append(s.msData.messages, hasJoined)
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
-	return &proto.ClientPackage{
-		Clientid:         &proto.ClientId{Clientid: s.nrClients},
-		Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: s.clock},
-	}, nil
+	return &proto.ClientId{Clientid: s.nrClients}, nil
 }
 
 func Run() {
@@ -138,7 +135,7 @@ func (s *Server) start_server() {
 
 	gRPCserver := grpc.NewServer()
 
-	log.Println("Server started at Lamport time " + strconv.Itoa(int(s.clock)))
+	log.Println("Server started")
 
 	netListener, err := net.Listen("tcp", ":5050")
 	if err != nil {

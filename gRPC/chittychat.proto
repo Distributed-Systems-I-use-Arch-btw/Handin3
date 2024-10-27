@@ -20,13 +20,8 @@ message MessagePackage {
   LamportTimestamp lamporttimestamp = 2;
 }
 
-message ClientPackage {
-  ClientId clientid = 1;
-  LamportTimestamp lamporttimestamp = 2;
-}
-
 service ChittyChat {
   rpc GetMessages (ClientId) returns (stream MessagePackage) {};
   rpc PostMessage (MessagePackage) returns (Empty) {};
-  rpc CreateClientIdentifier (Empty) returns (ClientPackage) {};
+  rpc CreateClientIdentifier (Empty) returns (ClientId) {};
 }

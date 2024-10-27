@@ -82,7 +82,7 @@ func Run() {
 	client := proto.NewChittyChatClient(conn)
 
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
-	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid.Clientid, clock: cliId.Lamporttimestamp.Lamporttimestamp}
+	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(1)}
 
 	go cliInfo.Scanner()
 
