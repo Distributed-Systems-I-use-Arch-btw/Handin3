@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -54,20 +53,34 @@ func (c *clientInfo) GetMessage() {
 		if err != nil {
             time.Sleep(time.Second)
         } else {
+			fmt.Println(messagePackage.Vectorclock.Vectorclock)
 			fmt.Println("Received message: ", messagePackage.Message.Messages)
-        	fmt.Println("Vector Clock: ", messagePackage.Vectorclock.Vectorclock)
 		}
 	}
 }
 
-func (c *clientInfo) PostMessage(arg string) {
+func (c *clientInfo) PostMessage(msg string) {
 	c.clock[c.clientId] += 1
 
-	messages := &proto.Messages{Messages: []string{arg}}
+	messages := &proto.Messages{Messages: []string{msg}}
 	vectorClock := &proto.VectorClock{Vectorclock: c.clock}
 	postPackage := &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}
 
 	c.client.PostMessage(context.Background(), postPackage)
+}
+
+func (c *clientInfo) Scanner() {
+	running := true
+	var text string
+	for running {
+		fmt.Scan(&text)
+		switch text {
+			case "exit":
+				break
+			default:
+				c.PostMessage(text)
+		}
+	}
 }
 
 func main() {
@@ -81,7 +94,10 @@ func main() {
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
 	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: make([]int32, cliId.Clientid+1)}
 
-	cliInfo.PostMessage(os.Args[1])
-
+	go cliInfo.Scanner()
+	
 	cliInfo.GetMessage()
+
 }
+
+
