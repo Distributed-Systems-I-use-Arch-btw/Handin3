@@ -5,15 +5,15 @@ message Messages {
   repeated string messages = 1;
 }
 
-message VectorClock {
-  int32 vectorclock = 1;
+message LamportTimestamp {
+  int32 lamporttimestamp = 1;
 }
 
 message Empty {}
 
 message MessagePackage {
   Messages message = 1;
-  VectorClock vectorclock = 2;
+  LamportTimestamp lamporttimestamp = 2;
 }
 
 message ClientId {

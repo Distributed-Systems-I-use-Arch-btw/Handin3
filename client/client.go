@@ -28,9 +28,9 @@ var colors = map[string]string{
     "reset":  "\033[0m",
 } 
 
-func (c *clientInfo) updateClock(newClock *proto.VectorClock) {
-	if c.clock < newClock.Vectorclock {
-		c.clock = newClock.Vectorclock
+func (c *clientInfo) updateClock(newClock *proto.LamportTimestamp) {
+	if c.clock < newClock.Lamporttimestamp {
+		c.clock = newClock.Lamporttimestamp
 	}
 }
 
@@ -41,7 +41,7 @@ func (c *clientInfo) GetMessage() {
 		if err != nil {
             time.Sleep(time.Second)
         } else {
-			fmt.Println(messagePackage.Vectorclock.Vectorclock)
+			fmt.Println(messagePackage.Lamporttimestamp.Lamporttimestamp)
 			fmt.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
 		}
 	}
@@ -51,8 +51,8 @@ func (c *clientInfo) PostMessage(msg string) {
 	c.clock += 1
 
 	messages := &proto.Messages{Messages: []string{msg}}
-	vectorClock := &proto.VectorClock{Vectorclock: c.clock}
-	postPackage := &proto.MessagePackage{Message: messages, Vectorclock: vectorClock}
+	LamportTimestamp := &proto.LamportTimestamp{Lamporttimestamp: c.clock}
+	postPackage := &proto.MessagePackage{Message: messages, Lamporttimestamp: LamportTimestamp}
 
 	c.client.PostMessage(context.Background(), postPackage)
 }

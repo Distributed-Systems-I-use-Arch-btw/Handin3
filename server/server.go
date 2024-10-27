@@ -22,9 +22,9 @@ type timedMessages struct {
 	timeStamps	[]int32
 }
 
-func (s *Server) updateClock(newClock *proto.VectorClock) {
-	if s.clock < newClock.Vectorclock {
-		s.clock = newClock.Vectorclock
+func (s *Server) updateClock(newClock *proto.LamportTimestamp) {
+	if s.clock < newClock.Lamporttimestamp {
+		s.clock = newClock.Lamporttimestamp
 	}
 }
 
@@ -45,7 +45,7 @@ func streamMessages(sendMessages timedMessages, stream proto.ChittyChat_GetMessa
 	for i := 0; i < len(sendMessages.messages); i++ {
         messagePackage := &proto.MessagePackage{
             Message:     &proto.Messages{Messages: []string{sendMessages.messages[i]}},
-            Vectorclock: &proto.VectorClock{Vectorclock: sendMessages.timeStamps[i]},
+            Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: sendMessages.timeStamps[i]},
         }
 
         if err := stream.Send(messagePackage); err != nil {
@@ -92,7 +92,7 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 		return &proto.Empty{}, errors.New("message is empty")
 	}
 
-	s.updateClock(in.GetVectorclock())
+	s.updateClock(in.GetLamporttimestamp())
 
 	s.msData.messages = append(s.msData.messages, curMessage[0])
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
