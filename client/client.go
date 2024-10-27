@@ -41,7 +41,7 @@ func (c *clientInfo) GetMessage() {
 		if err != nil {
             time.Sleep(time.Second)
         } else {
-			fmt.Println(messagePackage.Lamporttimestamp.Lamporttimestamp)
+			fmt.Println(colors["blue"],messagePackage.Lamporttimestamp.Lamporttimestamp, colors["reset"])
 			fmt.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages)
 		}
 	}
