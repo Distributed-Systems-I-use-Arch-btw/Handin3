@@ -70,8 +70,8 @@ func (s *Server) GetMessages(id *proto.ClientId, stream proto.ChittyChat_GetMess
 
 		select {
 			case <-stream.Context().Done():
+				c.clock += 1
 				hasLeft := fmt.Sprintf("Participant %d left Chitty-Chat at at Lamport time %d", s.nrClients, s.clock) 
-				//Might need to update vector clock?
 				s.msData.messages = append(s.msData.messages, hasLeft)
 				s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
 				return nil
