@@ -5,9 +5,28 @@ message Messages {
   repeated string messages = 1;
 }
 
+message LamportTimestamp {
+  int32 lamporttimestamp = 1;
+}
+
+message ClientId {
+  int32 clientid = 1;
+}
+
 message Empty {}
 
+message MessagePackage {
+  Messages message = 1;
+  LamportTimestamp lamporttimestamp = 2;
+}
+
+message ClientPackage {
+  ClientId clientid = 1;
+  LamportTimestamp lamporttimestamp = 2;
+}
+
 service ChittyChat {
-  rpc GetMessages (Empty) returns (Messages) {};
-  rpc PostMessage (Messages) returns (Empty) {};
+  rpc GetMessages (ClientId) returns (stream MessagePackage) {};
+  rpc PostMessage (MessagePackage) returns (Empty) {};
+  rpc CreateClientIdentifier (Empty) returns (ClientPackage) {};
 }
