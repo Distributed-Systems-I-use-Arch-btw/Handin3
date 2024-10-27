@@ -100,14 +100,17 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 	return &proto.Empty{}, nil
 }
 
-func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
+func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientPackage, error) {
 	s.nrClients += 1
 	//Might need to update vector clock?
 	hasJoined := fmt.Sprintf("Participant %d joined Chitty-Chat at at Lamport time %d", s.nrClients, s.clock) 
 	
 	s.msData.messages = append(s.msData.messages, hasJoined)
 	s.msData.timeStamps = append(s.msData.timeStamps, s.clock)
-	return &proto.ClientId{Clientid: s.nrClients}, nil
+	return &proto.ClientPackage {
+		Clientid: &proto.ClientId{Clientid: s.nrClients},
+		Lamporttimestamp: &proto.LamportTimestamp{Lamporttimestamp: s.clock},
+	}, nil
 }
 
 func main() {
