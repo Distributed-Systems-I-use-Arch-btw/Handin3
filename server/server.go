@@ -65,10 +65,6 @@ func (s *Server) GetMessages(clientInfo *proto.ClientPackage, stream proto.Chitt
 
 		select {
 		case <-stream.Context().Done():
-			hasLeft := "Participant " + strconv.Itoa(int(clientInfo.ClientId.Clientid)) + " left Chitty-Chat at Lamport time " + "TBA"
-			log.Println(hasLeft)
-			s.msData.messages = append(s.msData.messages, hasLeft)
-			s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
 			return nil
 		default:
 			continue
@@ -104,6 +100,13 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 	return &proto.ClientId{Clientid: s.nrClients}, nil
 }
 
+func (s *Server) Disconnect(ctx context.Context, in *proto.ClientPackage) (*proto.Empty, error) {
+	hasLeft := "Participant " + strconv.Itoa(int(in.ClientId.Clientid)) + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(in.LamportTimestamp.Lamporttimestamp))
+	log.Println(hasLeft)
+	s.msData.messages = append(s.msData.messages, hasLeft)
+	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
+	return &proto.Empty{}, nil
+}
 func Run() {
 	server := &Server{
 		nrClients: 0,

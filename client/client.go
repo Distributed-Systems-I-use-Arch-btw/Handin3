@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"time"
+	"os/signal"
+	"syscall"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -65,23 +67,39 @@ func (c *clientInfo) PostMessage(msg string) {
 
 func (c *clientInfo) Scanner() {
 	reader := bufio.NewReader(os.Stdin)
-	running := true
 
-	for running {
-
+	for true {
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
 
 		switch text {
 		case "exit":
-			running = false
+			c.Exit()
 		default:
 			c.PostMessage(text)
 		}
 	}
 }
 
+var sigChan = make(chan os.Signal, 1)
+
+func (c *clientInfo) Disconnect() {
+	<-sigChan
+	c.Exit()
+}
+
+func (c *clientInfo) Exit() {
+	c.client.Disconnect(context.Background(), 
+		&proto.ClientPackage{
+			ClientId: &proto.ClientId{Clientid: c.clientId},
+			LamportTimestamp: &proto.LamportTimestamp{Lamporttimestamp: c.clock},
+		})
+	os.Exit(0)
+}
+
 func Run() {
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
 	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
@@ -92,6 +110,7 @@ func Run() {
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
 	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(1)}
 
+	go cliInfo.Disconnect()
 	go cliInfo.Scanner()
 
 	cliInfo.GetMessage()

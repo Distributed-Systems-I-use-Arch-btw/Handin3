@@ -29,4 +29,5 @@ service ChittyChat {
   rpc GetMessages (ClientPackage) returns (stream MessagePackage) {};
   rpc PostMessage (MessagePackage) returns (Empty) {};
   rpc CreateClientIdentifier (Empty) returns (ClientId) {};
+  rpc Disconnect (ClientPackage) returns (Empty) {};
 }
