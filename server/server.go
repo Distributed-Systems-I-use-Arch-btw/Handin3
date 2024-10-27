@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	proto "ChittyChat/gRPC"
@@ -117,7 +117,7 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 	}, nil
 }
 
-func main() {
+func Run() {
 	server := &Server{
 		clock:     int32(0),
 		nrClients: 0,

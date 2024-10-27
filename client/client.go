@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	proto "ChittyChat/gRPC"
@@ -74,7 +74,7 @@ func (c *clientInfo) Scanner() {
 	}
 }
 
-func main() {
+func Run() {
 	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
