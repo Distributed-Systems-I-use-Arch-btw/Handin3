@@ -101,7 +101,7 @@ func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*
 }
 
 func (s *Server) Disconnect(ctx context.Context, in *proto.ClientPackage) (*proto.Empty, error) {
-	hasLeft := "Participant " + strconv.Itoa(int(in.ClientId.Clientid)) + " left Chitty-Chat at Lamport time " + strconv.Itoa(int(in.LamportTimestamp.Lamporttimestamp))
+	hasLeft := "Participant " + strconv.Itoa(int(in.ClientId.Clientid)) + " left Chitty-Chat at"
 	log.Println(hasLeft)
 	s.msData.messages = append(s.msData.messages, hasLeft)
 	s.msData.timeStamps = append(s.msData.timeStamps, in.LamportTimestamp.Lamporttimestamp)

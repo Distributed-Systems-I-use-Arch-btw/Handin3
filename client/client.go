@@ -19,6 +19,7 @@ type clientInfo struct {
 	client   proto.ChittyChatClient
 	clientId int32
 	clock    int32
+	logger   *log.Logger
 }
 
 var colors = map[string]string{
@@ -50,7 +51,8 @@ func (c *clientInfo) GetMessage() {
 			time.Sleep(time.Millisecond)
 		} else {
 			c.updateClock(messagePackage.Lamporttimestamp.Lamporttimestamp)
-			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], " Lamport time ", messagePackage.Lamporttimestamp.Lamporttimestamp)
+			c.logger.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], "Lamport time", messagePackage.Lamporttimestamp.Lamporttimestamp)
+			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], "Lamport time", messagePackage.Lamporttimestamp.Lamporttimestamp)
 		}
 	}
 }
@@ -100,15 +102,22 @@ func (c *clientInfo) Exit() {
 func Run() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	logFile, err := os.OpenFile("client.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+
 	conn, err := grpc.NewClient("localhost:5050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	logger := log.New(logFile, "", log.LstdFlags)
+
 	client := proto.NewChittyChatClient(conn)
 
 	cliId, err := client.CreateClientIdentifier(context.Background(), &proto.Empty{})
-	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(1)}
+	cliInfo := &clientInfo{client: client, clientId: cliId.Clientid, clock: int32(1), logger: logger}
 
 	go cliInfo.Disconnect()
 	go cliInfo.Scanner()
