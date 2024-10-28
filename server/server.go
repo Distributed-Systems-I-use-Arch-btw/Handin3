@@ -92,11 +92,11 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 func (s *Server) CreateClientIdentifier(ctx context.Context, in *proto.Empty) (*proto.ClientId, error) {
 	s.nrClients += 1
 
-	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at Lamport time " + "1"
+	hasJoined := "Participant " + strconv.Itoa(int(s.nrClients)) + " joined Chitty-Chat at"
 	log.Println(hasJoined)
 
 	s.msData.messages = append(s.msData.messages, hasJoined)
-	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
+	s.msData.timeStamps = append(s.msData.timeStamps, int32(1))
 	return &proto.ClientId{Clientid: s.nrClients}, nil
 }
 

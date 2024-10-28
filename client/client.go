@@ -6,10 +6,10 @@ import (
 	"context"
 	"log"
 	"os"
-	"strings"
-	"time"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -39,9 +39,9 @@ func (c *clientInfo) updateClock(newTimeStamp int32) {
 func (c *clientInfo) GetMessage() {
 	c.clock += 1
 
-	stream, _ := c.client.GetMessages(context.Background(), 
+	stream, _ := c.client.GetMessages(context.Background(),
 		&proto.ClientPackage{
-			ClientId: &proto.ClientId{Clientid: c.clientId},
+			ClientId:         &proto.ClientId{Clientid: c.clientId},
 			LamportTimestamp: &proto.LamportTimestamp{Lamporttimestamp: c.clock},
 		})
 	for {
@@ -50,7 +50,7 @@ func (c *clientInfo) GetMessage() {
 			time.Sleep(time.Millisecond)
 		} else {
 			c.updateClock(messagePackage.Lamporttimestamp.Lamporttimestamp)
-			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0])
+			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], " Lamport time ", messagePackage.Lamporttimestamp.Lamporttimestamp)
 		}
 	}
 }
@@ -89,9 +89,9 @@ func (c *clientInfo) Disconnect() {
 }
 
 func (c *clientInfo) Exit() {
-	c.client.Disconnect(context.Background(), 
+	c.client.Disconnect(context.Background(),
 		&proto.ClientPackage{
-			ClientId: &proto.ClientId{Clientid: c.clientId},
+			ClientId:         &proto.ClientId{Clientid: c.clientId},
 			LamportTimestamp: &proto.LamportTimestamp{Lamporttimestamp: c.clock},
 		})
 	os.Exit(0)
@@ -114,5 +114,4 @@ func Run() {
 	go cliInfo.Scanner()
 
 	cliInfo.GetMessage()
-
 }
