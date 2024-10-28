@@ -51,7 +51,7 @@ func (c *clientInfo) GetMessage() {
 			time.Sleep(time.Millisecond)
 		} else {
 			c.updateClock(messagePackage.Lamporttimestamp.Lamporttimestamp)
-			c.logger.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], "Lamport time", messagePackage.Lamporttimestamp.Lamporttimestamp)
+			c.logger.Println("Received message: ", messagePackage.Message.Messages[0], "Lamport time", messagePackage.Lamporttimestamp.Lamporttimestamp)
 			log.Println(colors["green"], "Received message: ", colors["reset"], messagePackage.Message.Messages[0], "Lamport time", messagePackage.Lamporttimestamp.Lamporttimestamp)
 		}
 	}

@@ -1,17 +1,17 @@
-2024/10/28 16:59:01 [32m Received message:  [0m Participant 1 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:09 [32m Received message:  [0m Hello, World! Lamport time 4
-2024/10/28 16:59:15 [32m Received message:  [0m Participant 2 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:15 [32m Received message:  [0m Participant 1 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:15 [32m Received message:  [0m Hello, World! Lamport time 4
-2024/10/28 16:59:15 [32m Received message:  [0m Participant 2 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:22 [32m Received message:  [0m Participant 1 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:22 [32m Received message:  [0m Participant 3 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:22 [32m Received message:  [0m Participant 3 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:22 [32m Received message:  [0m Hello, World! Lamport time 4
-2024/10/28 16:59:22 [32m Received message:  [0m Participant 2 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:22 [32m Received message:  [0m Participant 3 joined Chitty-Chat at Lamport time 1
-2024/10/28 16:59:25 [32m Received message:  [0m Participant 2 left Chitty-Chat at Lamport time 7
-2024/10/28 16:59:25 [32m Received message:  [0m Participant 2 left Chitty-Chat at Lamport time 7
-2024/10/28 16:59:41 [32m Received message:  [0m Hello Lamport time 9
-2024/10/28 16:59:41 [32m Received message:  [0m Hello Lamport time 9
-2024/10/28 16:59:45 [32m Received message:  [0m Participant 3 left Chitty-Chat at Lamport time 10
+2024/10/28 17:54:50 Received message:  Participant 1 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:54:59 Received message:  Hello, World! Lamport time 4
+2024/10/28 17:55:05 Received message:  Participant 2 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:05 Received message:  Participant 1 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:05 Received message:  Hello, World! Lamport time 4
+2024/10/28 17:55:05 Received message:  Participant 2 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:11 Received message:  Participant 3 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:11 Received message:  Participant 3 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:11 Received message:  Participant 1 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:11 Received message:  Hello, World! Lamport time 4
+2024/10/28 17:55:11 Received message:  Participant 2 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:11 Received message:  Participant 3 joined Chitty-Chat at Lamport time 1
+2024/10/28 17:55:14 Received message:  Participant 2 left Chitty-Chat at Lamport time 7
+2024/10/28 17:55:14 Received message:  Participant 2 left Chitty-Chat at Lamport time 7
+2024/10/28 17:55:20 Received message:  Hello Lamport time 9
+2024/10/28 17:55:20 Received message:  Hello Lamport time 9
+2024/10/28 17:55:24 Received message:  Participant 3 left Chitty-Chat at Lamport time 10
