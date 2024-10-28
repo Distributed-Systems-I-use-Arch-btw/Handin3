@@ -82,7 +82,7 @@ func (s *Server) PostMessage(ctx context.Context, in *proto.MessagePackage) (*pr
 	}
 
 	s.msData.messages = append(s.msData.messages, curMessage[0])
-	s.msData.timeStamps = append(s.msData.timeStamps, int32(0))
+	s.msData.timeStamps = append(s.msData.timeStamps, in.Lamporttimestamp.Lamporttimestamp)
 
 	log.Println("Received PostMessage call at Lamport time " + strconv.Itoa(int(in.Lamporttimestamp.Lamporttimestamp)))
 
